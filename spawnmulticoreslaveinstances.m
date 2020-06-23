@@ -1,4 +1,4 @@
-function multicoreDir = spawnmulticoreslaveinstances(n, multicoreDir, settings)
+function multicoreDir = spawnmulticoreslaveinstances(n, multicoreDir, bFigureWindows, settings)
 %STARTMULTICORESLAVEINSTANCES  Start multi-core processing slave processes in new MATLAB instances.
 %
 %   Igor Gotlibovych
@@ -22,6 +22,9 @@ if ~exist(multicoreDir, 'dir')
     error('Unable to create slave file directory %s.', multicoreDir);
   end
 end
+if ~exist('bFigureWindows', 'var') || isempty(bFigureWindows)
+  bFigureWindows = false;
+end
 
 if ~exist('settings', 'var')
   % use default settings
@@ -36,9 +39,15 @@ timestamp = num2str(randi(9999));  %FIXME
 settingsfile = fullfile(multicoreDir, ['settings' timestamp '.mat']);
 save(settingsfile, 'settings', 'multicoreDir', 'packagepath');
 
+if bFigureWindows
+  fig_windows = '';
+else
+  fig_windows = '-noFigureWindows';
+end
+
 for i = 1:n
     command = [
-        'matlab -nosplash -nodesktop  -minimize -noFigureWindows -r "' ...
+        'matlab -nosplash -nodesktop  -minimize ' fig_windows ' -r "' ...
         'disp(''Starting Slave ' num2str(i) ''');'... 
         'load(''' settingsfile ''');'...
         'cd(fullfile(packagepath, ''..''));'...
